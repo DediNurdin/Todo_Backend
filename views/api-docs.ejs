@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Todo API Documentation</title>
+  <style>
+    body { font-family: Arial, sans-serif; line-height: 1.6; max-width: 800px; margin: 0 auto; padding: 20px; }
+    h1 { color: #333; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+    .endpoint { background: #f5f5f5; padding: 15px; border-radius: 5px; margin-bottom: 20px; }
+    .method { font-weight: bold; color: white; padding: 3px 8px; border-radius: 3px; }
+    .get { background: #61affe; }
+    .post { background: #49cc90; }
+    .put { background: #fca130; }
+    .delete { background: #f93e3e; }
+    pre { background: #333; color: white; padding: 10px; border-radius: 5px; overflow-x: auto; }
+    code { background: #f5f5f5; padding: 2px 4px; border-radius: 3px; }
+  </style>
+</head>
+<body>
+  <h1>Todo API Documentation (In-Memory Database)</h1>
+  
+  <div class="endpoint">
+    <div><span class="method get">GET</span> <strong>/api/todos</strong></div>
+    <p>Get all todos</p>
+    <pre>Response:
+[
+  {
+    "id": "550e8400-e29b-41d4-a716-446655440000",
+    "title": "Belajar React",
+    "description": "Membuat komponen dasar",
+    "isCompleted": false,
+    "dueDate": "2023-11-10T00:00:00.000Z",
+    "createdAt": "2023-11-03T08:30:00.000Z"
+  },
+  ...
+]</pre>
+  </div>
+
+  <div class="endpoint">
+    <div><span class="method post">POST</span> <strong>/api/todos</strong></div>
+    <p>Create new todo</p>
+    <pre>Request Body:
+{
+  "title": "New Todo",
+  "description": "Todo description",
+  "isCompleted": false,
+  "dueDate": "2023-11-15"
+}</pre>
+  </div>
+
+  <div class="endpoint">
+    <div><span class="method put">PUT</span> <strong>/api/todos/:id</strong></div>
+    <p>Update todo</p>
+    <pre>Request Body:
+{
+  "title": "Updated Todo",
+  "isCompleted": true
+}</pre>
+    <p><em>Note: Hanya field yang diubah perlu dikirim</em></p>
+  </div>
+
+  <div class="endpoint">
+    <div><span class="method delete">DELETE</span> <strong>/api/todos/:id</strong></div>
+    <p>Delete todo</p>
+  </div>
+
+  <h2>Catatan Penting</h2>
+  <p>Backend ini menggunakan penyimpanan dalam memori, sehingga:</p>
+  <ul>
+    <li>Data akan hilang ketika server dimatikan</li>
+    <li>Cocok untuk development dan testing</li>
+    <li>Untuk produksi, tambahkan database seperti SQLite, PostgreSQL, atau MongoDB</li>
+  </ul>
+</body>
+</html>
