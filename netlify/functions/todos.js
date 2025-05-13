@@ -11,15 +11,32 @@ let todos = [
   }
 ];
 
-exports.handler = async function (event, context) {
-  if (event.httpMethod === 'GET') {
-    return {
-      statusCode: 200,
-      body: JSON.stringify(todos),
-    };
+exports.handler = async function (event) {
+  const method = event.httpMethod;
+  const id = event.queryStringParameters?.id;
+
+  if (method === 'GET') {
+    if (id) {
+      const todo = todos.find(t => t.id === id);
+      if (!todo) {
+        return {
+          statusCode: 404,
+          body: JSON.stringify({ error: 'Todo not found' }),
+        };
+      }
+      return {
+        statusCode: 200,
+        body: JSON.stringify(todo),
+      };
+    } else {
+      return {
+        statusCode: 200,
+        body: JSON.stringify(todos),
+      };
+    }
   }
 
-  if (event.httpMethod === 'POST') {
+  if (method === 'POST') {
     try {
       const data = JSON.parse(event.body);
       const { title, description, isCompleted, dueDate } = data;
@@ -45,6 +62,67 @@ exports.handler = async function (event, context) {
         body: JSON.stringify({ error: err.message }),
       };
     }
+  }
+
+  if (method === 'PUT') {
+    if (!id) {
+      return {
+        statusCode: 400,
+        body: JSON.stringify({ error: 'Missing id in query' }),
+      };
+    }
+
+    const index = todos.findIndex(t => t.id === id);
+    if (index === -1) {
+      return {
+        statusCode: 404,
+        body: JSON.stringify({ error: 'Todo not found' }),
+      };
+    }
+
+    try {
+      const data = JSON.parse(event.body);
+      todos[index] = {
+        ...todos[index],
+        title: data.title || todos[index].title,
+        description: data.description || todos[index].description,
+        isCompleted: data.isCompleted !== undefined ? data.isCompleted : todos[index].isCompleted,
+        dueDate: data.dueDate ? new Date(data.dueDate) : todos[index].dueDate,
+      };
+
+      return {
+        statusCode: 200,
+        body: JSON.stringify(todos[index]),
+      };
+    } catch (err) {
+      return {
+        statusCode: 400,
+        body: JSON.stringify({ error: err.message }),
+      };
+    }
+  }
+
+  if (method === 'DELETE') {
+    if (!id) {
+      return {
+        statusCode: 400,
+        body: JSON.stringify({ error: 'Missing id in query' }),
+      };
+    }
+
+    const index = todos.findIndex(t => t.id === id);
+    if (index === -1) {
+      return {
+        statusCode: 404,
+        body: JSON.stringify({ error: 'Todo not found' }),
+      };
+    }
+
+    const deleted = todos.splice(index, 1)[0];
+    return {
+      statusCode: 200,
+      body: JSON.stringify({ message: 'Todo deleted', deleted }),
+    };
   }
 
   return {
