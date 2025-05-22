@@ -8,14 +8,6 @@ let todos = [
         isCompleted: false,
         dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
         createdAt: new Date()
-    },
-    {
-        id: uuidv4(),
-        title: 'Belajar Flutter',
-        description: 'Membuat aplikasi mobile',
-        isCompleted: false,
-        dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-        createdAt: new Date()
     }
 ];
 
