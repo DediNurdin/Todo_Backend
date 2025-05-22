@@ -11,6 +11,15 @@ let todos = [
     }
 ];
 
+function getTodoStats() {
+    const completedCount = todos.filter(todo => todo.isCompleted).length;
+    return {
+        total: todos.length,
+        completed: completedCount,
+        incomplete: todos.length - completedCount
+    };
+}
+
 exports.handler = async function (event) {
     const method = event.httpMethod;
     const id = event.queryStringParameters?.id;
@@ -76,7 +85,10 @@ exports.handler = async function (event) {
 
             return {
                 statusCode: 201,
-                body: JSON.stringify(newTodo),
+                body: JSON.stringify({
+                    todo: newTodo,
+                    stats: getTodoStats()
+                }),
             };
         } catch (err) {
             return {
@@ -114,7 +126,10 @@ exports.handler = async function (event) {
 
             return {
                 statusCode: 200,
-                body: JSON.stringify(todos[index]),
+                body: JSON.stringify({
+                    todo: todos[index],
+                    stats: getTodoStats()
+                }),
             };
         } catch (err) {
             return {
@@ -143,7 +158,11 @@ exports.handler = async function (event) {
         const deleted = todos.splice(index, 1)[0];
         return {
             statusCode: 200,
-            body: JSON.stringify({ message: 'Todo deleted', deleted }),
+            body: JSON.stringify({
+                message: 'Todo deleted',
+                deleted,
+                stats: getTodoStats()
+            }),
         };
     }
 
