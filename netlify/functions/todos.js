@@ -16,6 +16,20 @@ exports.handler = async function (event) {
     const id = event.queryStringParameters?.id;
 
     if (method === 'GET') {
+        if (event.path === '/stats') {
+            const completedCount = todos.filter(todo => todo.isCompleted).length;
+            const incompleteCount = todos.length - completedCount;
+
+            return {
+                statusCode: 200,
+                body: JSON.stringify({
+                    total: todos.length,
+                    completed: completedCount,
+                    incomplete: incompleteCount
+                }),
+            };
+        }
+
         if (id) {
             const todo = todos.find(t => t.id === id);
             if (!todo) {
@@ -29,9 +43,17 @@ exports.handler = async function (event) {
                 body: JSON.stringify(todo),
             };
         } else {
+            const completedCount = todos.filter(todo => todo.isCompleted).length;
             return {
                 statusCode: 200,
-                body: JSON.stringify(todos),
+                body: JSON.stringify({
+                    todos,
+                    stats: {
+                        total: todos.length,
+                        completed: completedCount,
+                        incomplete: todos.length - completedCount
+                    }
+                }),
             };
         }
     }
