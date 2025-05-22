@@ -8,6 +8,14 @@ let todos = [
         isCompleted: false,
         dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
         createdAt: new Date()
+    },
+    {
+        id: uuidv4(),
+        title: 'Belajar Flutter',
+        description: 'Membuat aplikasi mobile',
+        isCompleted: false,
+        dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+        createdAt: new Date()
     }
 ];
 
@@ -78,6 +86,21 @@ exports.deleteTodo = (req, res) => {
 
         const deletedTodo = todos.splice(index, 1)[0];
         res.json({ message: 'Todo deleted successfully', deletedTodo });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};
+
+exports.getTodoStats = (req, res) => {
+    try {
+        const completedCount = todos.filter(todo => todo.isCompleted).length;
+        const incompleteCount = todos.length - completedCount;
+
+        res.json({
+            total: todos.length,
+            completed: completedCount,
+            incomplete: incompleteCount
+        });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
