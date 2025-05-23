@@ -63,7 +63,7 @@ exports.handler = async function (event) {
                 .select('*')
                 .eq('user_id', user.id)
 
-            const stats = await getTodoStats(user.id)
+            const stats = await getStats(user.id)
 
             return {
                 statusCode: 200,
@@ -186,7 +186,7 @@ exports.handler = async function (event) {
 
             if (error) throw error
 
-            const stats = await getTodoStats(user.id)
+            const stats = await getStats(user.id)
 
             return {
                 statusCode: 200,
