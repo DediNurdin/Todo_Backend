@@ -1,12 +1,8 @@
 const supabase = require('./supabase')
 
-// Hapus array todos dan uuid (karena sudah handle oleh Supabase)
 
 exports.handler = async function (event) {
-    // Dapatkan JWT dari header
     const token = event.headers.authorization?.split(' ')[1]
-
-    // Verifikasi user
     const { data: { user }, error: authError } = await supabase.auth.getUser(token)
 
     if (authError) {
@@ -78,83 +74,86 @@ exports.handler = async function (event) {
 
     if (method === 'POST') {
         try {
-            const data = JSON.parse(event.body)
-
-            const newTodo = {
-                title: data.title,
-                description: data.description || '',
-                is_completed: data.isCompleted || false,
-                due_date: data.dueDate || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-                user_id: user.id
-            }
+            const { title, description, is_completed, due_date } = JSON.parse(event.body);
 
             const { data: insertedTodo, error } = await supabase
                 .from('todos')
-                .insert([newTodo])
-                .single()
+                .insert({
+                    title,
+                    description: description || '',
+                    is_completed: is_completed || false,
+                    due_date: due_date || null,
+                    user_id: user.id
+                })
+                .select('*')
+                .single();
 
-            if (error) throw error
-
-            const stats = await getTodoStats(user.id)
+            if (error) throw error;
 
             return {
                 statusCode: 201,
                 body: JSON.stringify({
-                    todo: insertedTodo,
-                    stats
+                    id: insertedTodo.id,
+                    user_id: insertedTodo.user_id,
+                    title: insertedTodo.title,
+                    description: insertedTodo.description,
+                    is_completed: insertedTodo.is_completed,
+                    due_date: insertedTodo.due_date,
+                    created_at: insertedTodo.created_at
                 })
-            }
+            };
         } catch (err) {
             return {
                 statusCode: 400,
                 body: JSON.stringify({ error: err.message })
-            }
+            };
         }
     }
 
     if (method === 'PUT') {
+        const id = event.queryStringParameters?.id;
         if (!id) {
-            return {
-                statusCode: 400,
-                body: JSON.stringify({ error: 'Missing id in query' })
-            }
+            return { statusCode: 400, body: JSON.stringify({ error: 'Missing id' }) };
         }
 
         try {
-            const data = JSON.parse(event.body)
-
-            const updates = {
-                title: data.title,
-                description: data.description,
-                is_completed: data.isCompleted,
-                due_date: data.dueDate
-            }
+            const updates = JSON.parse(event.body);
 
             const { data: updatedTodo, error } = await supabase
                 .from('todos')
-                .update(updates)
+                .update({
+                    title: updates.title,
+                    description: updates.description,
+                    is_completed: updates.is_completed,
+                    due_date: updates.due_date
+                })
                 .eq('id', id)
                 .eq('user_id', user.id)
-                .single()
+                .select('*')
+                .single();
 
-            if (error) throw error
-
-            const stats = await getTodoStats(user.id)
+            if (error) throw error;
 
             return {
                 statusCode: 200,
                 body: JSON.stringify({
-                    todo: updatedTodo,
-                    stats
+                    id: updatedTodo.id,
+                    user_id: updatedTodo.user_id,
+                    title: updatedTodo.title,
+                    description: updatedTodo.description,
+                    is_completed: updatedTodo.is_completed,
+                    due_date: updatedTodo.due_date,
+                    created_at: updatedTodo.created_at
                 })
-            }
+            };
         } catch (err) {
             return {
                 statusCode: 400,
                 body: JSON.stringify({ error: err.message })
-            }
+            };
         }
     }
+
     if (method === 'DELETE') {
         if (!id) {
             return {
@@ -164,7 +163,6 @@ exports.handler = async function (event) {
         }
 
         try {
-            // Dapatkan todo sebelum dihapus
             const { data: todoToDelete, error: fetchError } = await supabase
                 .from('todos')
                 .select('*')
@@ -174,7 +172,6 @@ exports.handler = async function (event) {
 
             if (fetchError) throw fetchError
 
-            // Hapus todo
             const { error } = await supabase
                 .from('todos')
                 .delete()
