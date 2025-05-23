@@ -76,7 +76,7 @@ exports.handler = async function (event) {
         try {
             const { title, description, is_completed, due_date } = JSON.parse(event.body);
 
-            const { data: insertedTodo, error } = await supabase
+            const { data, error } = await supabase
                 .from('todos')
                 .insert({
                     title,
@@ -93,13 +93,16 @@ exports.handler = async function (event) {
             return {
                 statusCode: 201,
                 body: JSON.stringify({
-                    id: insertedTodo.id,
-                    user_id: insertedTodo.user_id,
-                    title: insertedTodo.title,
-                    description: insertedTodo.description,
-                    is_completed: insertedTodo.is_completed,
-                    due_date: insertedTodo.due_date,
-                    created_at: insertedTodo.created_at
+                    todo: {
+                        id: data.id,
+                        user_id: data.user_id,
+                        title: data.title,
+                        description: data.description,
+                        is_completed: data.is_completed,
+                        due_date: data.due_date,
+                        created_at: data.created_at
+                    },
+                    stats: await getStats(user.id)
                 })
             };
         } catch (err) {
@@ -119,7 +122,7 @@ exports.handler = async function (event) {
         try {
             const updates = JSON.parse(event.body);
 
-            const { data: updatedTodo, error } = await supabase
+            const { data, error } = await supabase
                 .from('todos')
                 .update({
                     title: updates.title,
@@ -137,13 +140,16 @@ exports.handler = async function (event) {
             return {
                 statusCode: 200,
                 body: JSON.stringify({
-                    id: updatedTodo.id,
-                    user_id: updatedTodo.user_id,
-                    title: updatedTodo.title,
-                    description: updatedTodo.description,
-                    is_completed: updatedTodo.is_completed,
-                    due_date: updatedTodo.due_date,
-                    created_at: updatedTodo.created_at
+                    todo: {
+                        id: data.id,
+                        user_id: data.user_id,
+                        title: data.title,
+                        description: data.description,
+                        is_completed: data.is_completed,
+                        due_date: data.due_date,
+                        created_at: data.created_at
+                    },
+                    stats: await getStats(user.id)
                 })
             };
         } catch (err) {
@@ -199,21 +205,21 @@ exports.handler = async function (event) {
     }
 }
 
-async function getTodoStats(userId) {
+const getStats = async (userId) => {
     const { count: total } = await supabase
         .from('todos')
         .select('*', { count: 'exact' })
-        .eq('user_id', userId)
+        .eq('user_id', userId);
 
     const { count: completed } = await supabase
         .from('todos')
         .select('*', { count: 'exact' })
         .eq('user_id', userId)
-        .eq('is_completed', true)
+        .eq('is_completed', true);
 
     return {
         total,
         completed,
         incomplete: total - completed
-    }
-}
+    };
+};
